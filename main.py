@@ -25,9 +25,8 @@ hyper_param_init = {
     "t_min": 6.5,
     'nb_hidden': 2,
     'dim_latent': 32,
-    'nb_gn': 5,
-    'nb_hidden_encode': 4,
-    'nb_neighbours': 4
+    'nb_processors': 10,
+    'nb_neighbours': 6
 }
 
 hyper_param_init['H'] = [DICT_CASE[str(hyper_param_init['case'])]]

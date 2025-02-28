@@ -39,7 +39,8 @@ def train(
     nb_batches = 10
     dataset = GraphDataset(X_full, U_full, nb_neighbours)
     dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
-    edge_neighbours = dataset.edge_neighbours
+    edge_neighbours = dataset.edge_neighbours.to(device)
+    edge_attributes = dataset.edge_attributes.to(device)
     delta_t = dataset.delta_t
 
     for epoch in range(len(train_loss["total"]), nb_it_tot):
@@ -56,7 +57,7 @@ def train(
             U = U.requires_grad_(True).to(device)
             U_n = U_n.to(device)
 
-            pred_U_n = model(U, edge_neighbours) * delta_t + U
+            pred_U_n = model(U, edge_attributes, edge_neighbours) * delta_t + U
             loss_data = loss(pred_U_n, U_n)
 
             # Backpropagation

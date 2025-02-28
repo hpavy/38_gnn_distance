@@ -35,8 +35,18 @@ class GraphDataset(Dataset):
         # Calcul des distances euclidiennes
         distances = torch.sqrt((diff ** 2).sum(dim=2))
         self.edge_neighbours = torch.empty((X_sort.shape[0], nb_neighbours), dtype=torch.long)
+        edge_attributes = torch.empty((X_sort.shape[0], nb_neighbours, 3))
         for i in range(X_sort.shape[0]):
             self.edge_neighbours[i, :] = torch.topk(distances[i, :], nb_neighbours + 1, largest=False)[1][1:]
+            for k, neighbour in enumerate(self.edge_neighbours[i, :]):
+                neighbour = neighbour.item()
+                # print(X_sort[i,0]-X_sort[neighbour, 0])
+                # print(i, neighbour)
+                # print(X_sort[i,0]-X_sort[neighbour, 0])
+                # print(X_sort[i,1]-X_sort[neighbour, 1])
+                # print(torch.sqrt(torch.sum((X_sort[i, :]-X_sort[neighbour, :])**2)))
+                edge_attributes[i, k, :] = torch.stack((X_sort[i,0]-X_sort[neighbour, 0], X_sort[i,1]-X_sort[neighbour, 1], torch.sqrt(torch.sum((X_sort[i]-X_sort[neighbour])**2))))
+        self.edge_attributes = edge_attributes
 
     def __len__(self):
         return self.X_full[:, 2].unique().shape[0] - 1
