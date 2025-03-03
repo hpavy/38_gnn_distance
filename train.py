@@ -53,7 +53,7 @@ def train(
 
             # Supposons que batch contient (U, U_n)
             U, U_n = batch
-
+            U += 0.05 * torch.randn_like(U)  # le bruit gaussien
             U = U.requires_grad_(True).to(device)
             U_n = U_n.to(device)
 
@@ -90,30 +90,26 @@ def train(
         print(f"time_epoch: {time.time()-time_start_batch:.0f}s")
         print(f"time: {time.time()-time_start_batch:.0f}s", file=f)
 
-        # if (epoch + 1) % save_rate == 0:
-        #     with torch.no_grad():
-        #         dossier_midle = Path(
-        #             folder_result + f"/epoch{len(train_loss['total'])}"
-        #         )
-        #         dossier_midle.mkdir(parents=True, exist_ok=True)
-        #         torch.save(
-        #             {
-        #                 "model_state_dict": model.state_dict(),
-        #                 "optimizer_state_dict": optimizer.state_dict(),
-        #                 "scheduler_state_dict": scheduler.state_dict(),
-        #             },
-        #             folder_result
-        #             + f"/epoch{len(train_loss['total'])}"
-        #             + "/model_weights.pth",
-        #         )
+        if (epoch + 1) % save_rate == 0:
+            with torch.no_grad():
+                dossier_midle = Path(
+                    folder_result + f"/epoch{len(train_loss['total'])}"
+                )
+                dossier_midle.mkdir(parents=True, exist_ok=True)
+                torch.save(
+                    {
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                        "scheduler_state_dict": scheduler.state_dict(),
+                    },
+                    folder_result
+                    + f"/epoch{len(train_loss['total'])}"
+                    + "/model_weights.pth",
+                )
 
-        #         write_csv(
-        #             train_loss,
-        #             folder_result + f"/epoch{len(train_loss['total'])}",
-        #             file_name="/train_loss.csv",
-        #         )
-        #         write_csv(
-        #             test_loss,
-        #             folder_result + f"/epoch{len(train_loss['total'])}",
-        #             file_name="/test_loss.csv",
-        #         )
+                write_csv(
+                    train_loss,
+                    folder_result + f"/epoch{len(train_loss['total'])}",
+                    file_name="/train_loss.csv",
+                )
+

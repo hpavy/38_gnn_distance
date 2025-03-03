@@ -26,26 +26,27 @@ class GraphDataset(Dataset):
         self.X_full = X_full
         self.U_full = U_full
         time_ = X_full[:, 2].unique()[5]
+        self.nb_time = X_full[:, 2].unique().shape[0]
         self.delta_t = (X_full[:, 2].unique()[1:] - X_full[:, 2].unique()[:-1]).mean()
         X = X_full[X_full[:, 2] == time_][:, :2]
         indices = torch.argsort(X[:, 0]*1.1 + X[:, 1]*1.5)
-        X_sort = X[indices]
+        self.X_sort = X[indices]
         # Broadcasting de génie
-        diff = X_sort[:, None, :] - X_sort[None, :, :]
+        diff = self.X_sort[:, None, :] - self.X_sort[None, :, :]
         # Calcul des distances euclidiennes
         distances = torch.sqrt((diff ** 2).sum(dim=2))
-        self.edge_neighbours = torch.empty((X_sort.shape[0], nb_neighbours), dtype=torch.long)
-        edge_attributes = torch.empty((X_sort.shape[0], nb_neighbours, 3))
-        for i in range(X_sort.shape[0]):
+        self.edge_neighbours = torch.empty((self.X_sort.shape[0], nb_neighbours), dtype=torch.long)
+        edge_attributes = torch.empty((self.X_sort.shape[0], nb_neighbours, 3))
+        for i in range(self.X_sort.shape[0]):
             self.edge_neighbours[i, :] = torch.topk(distances[i, :], nb_neighbours + 1, largest=False)[1][1:]
             for k, neighbour in enumerate(self.edge_neighbours[i, :]):
                 neighbour = neighbour.item()
-                # print(X_sort[i,0]-X_sort[neighbour, 0])
+                # print(self.X_sort[i,0]-self.X_sort[neighbour, 0])
                 # print(i, neighbour)
-                # print(X_sort[i,0]-X_sort[neighbour, 0])
-                # print(X_sort[i,1]-X_sort[neighbour, 1])
-                # print(torch.sqrt(torch.sum((X_sort[i, :]-X_sort[neighbour, :])**2)))
-                edge_attributes[i, k, :] = torch.stack((X_sort[i,0]-X_sort[neighbour, 0], X_sort[i,1]-X_sort[neighbour, 1], torch.sqrt(torch.sum((X_sort[i]-X_sort[neighbour])**2))))
+                # print(self.X_sort[i,0]-self.X_sort[neighbour, 0])
+                # print(self.X_sort[i,1]-self.X_sort[neighbour, 1])
+                # print(torch.sqrt(torch.sum((self.X_sort[i, :]-self.X_sort[neighbour, :])**2)))
+                edge_attributes[i, k, :] = torch.stack((self.X_sort[i,0]-self.X_sort[neighbour, 0], self.X_sort[i,1]-self.X_sort[neighbour, 1], torch.sqrt(torch.sum((self.X_sort[i]-self.X_sort[neighbour])**2))))
         self.edge_attributes = edge_attributes
 
     def __len__(self):
@@ -179,37 +180,31 @@ def init_model(f, hyper_param, device, folder_result):
     )
     loss = nn.MSELoss()
     # On regarde si notre modèle n'existe pas déjà
-    # if Path(folder_result + "/model_weights.pth").exists():
-    #     # Charger l'état du modèle et de l'optimiseur
-    #     checkpoint = torch.load(folder_result + "/model_weights.pth")
-    #     model.load_state_dict(checkpoint["model_state_dict"])
-    #     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    #     scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
-    #     weights = checkpoint["weights"]
-    #     print("\nModèle chargé\n", file=f)
-    #     print("\nModèle chargé\n")
-    #     csv_train = read_csv(folder_result + "/train_loss.csv")
-    #     csv_test = read_csv(folder_result + "/test_loss.csv")
-    #     train_loss = {
-    #         "total": list(csv_train["total"]),
-    #         "data": list(csv_train["data"]),
-    #         "pde": list(csv_train["pde"]),
-    #         "border": list(csv_train["border"]),
-    #     }
-    #     test_loss = {
-    #         "total": list(csv_test["total"]),
-    #         "data": list(csv_test["data"]),
-    #         "pde": list(csv_test["pde"]),
-    #         "border": list(csv_test["border"]),
-    #     }
-    #     print("\nLoss chargée\n", file=f)
-    #     print("\nLoss chargée\n")
-    # else:
-    print("Nouveau modèle\n", file=f)
-    print("Nouveau modèle\n")
-    train_loss = {"total": []}
-    test_loss = {"total": []}
-    return model, optimizer, scheduler, loss, train_loss, test_loss
+    if Path(folder_result + "/model_weights.pth").exists():
+        # Charger l'état du modèle et de l'optimiseur
+        checkpoint = torch.load(folder_result + "/model_weights.pth")
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+        # weights = checkpoint["weights"]
+        print("\nModèle chargé\n", file=f)
+        print("\nModèle chargé\n")
+        csv_train = read_csv(folder_result + "/train_loss.csv")
+        # csv_test = read_csv(folder_result + "/test_loss.csv")
+        train_loss = {
+            "total": list(csv_train["total"]),
+            # "data": list(csv_train["data"]),
+            # "pde": list(csv_train["pde"]),
+            # "border": list(csv_train["border"]),
+        }
+
+        print("\nLoss chargée\n", file=f)
+        print("\nLoss chargée\n")
+    else:
+        print("Nouveau modèle\n", file=f)
+        print("Nouveau modèle\n")
+        train_loss = {"total": []}
+    return model, optimizer, scheduler, loss, train_loss
 
 
 if __name__ == "__main__":

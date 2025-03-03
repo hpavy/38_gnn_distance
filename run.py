@@ -45,12 +45,12 @@ class RunSimulation:
 
         # On plot les print dans un fichier texte
         with open(self.folder_result + "/print.txt", "a") as f:
-            model, optimizer, scheduler, loss, train_loss, test_loss = (
+            model, optimizer, scheduler, loss, train_loss = (
                 init_model(f, self.hyper_param, self.device, self.folder_result)
             )
             # On entraine le modèle
             train(
-                nb_epoch=1000,
+                nb_epoch=self.hyper_param['nb_epochs'],
                 train_loss=train_loss,
                 model=model,
                 loss=loss,

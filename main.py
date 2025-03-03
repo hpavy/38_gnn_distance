@@ -6,15 +6,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Le code se lance sur {device}")
 
 
-folder_result_name = "2_piche"  # name of the result folder
+folder_result_name = "4_with_bruit"  # name of the result folder
 
 # On utilise hyper_param_init uniquement si c'est un nouveau modèle
 
 hyper_param_init = {
     "num": 1,
     "case": 2,
-    "nb_epoch": 1000,
-    "save_rate": 10,
+    "nb_epochs": 10000,
+    "save_rate": 300,
     "batch_size": 10,
     "lr_init": 1e-3,
     "gamma_scheduler": 0.999,
